@@ -1,13 +1,9 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r echo = TRUE}
+
+```r
 ## read the activity data
 activity_df <- read.csv("activity.csv")
 ## convert the date variable to date format
@@ -16,47 +12,63 @@ activity_df$date <- as.Date(activity_df$date, format="%Y-%m-%d")
 
 
 ## What is mean total number of steps taken per day?
-```{r echo = TRUE}
+
+```r
 ## calculate the total number of steps per day.
 activity_array <- tapply(activity_df$steps,activity_df$date,FUN=sum)
 ## histogram of total steps per day
 hist(activity_array,main = "histogram of total steps per day", xlab="total steps/day")
 ```
 
-```{r echo = TRUE, results="hide"}
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
+
+```r
 ## calculate the mean & median value for daily total number of steps per day
 mevalue <- mean(activity_array, na.rm=TRUE)
 mdvalue <- median(activity_array, na.rm=TRUE)
 ```
 
-##### The mean of total number of steps taken per day is *`r mevalue`* and median is *`r mdvalue`*
+##### The mean of total number of steps taken per day is *1.0766189\times 10^{4}* and median is *10765*
 
 
 ## What is the average daily activity pattern?
-```{r echo = TRUE}
+
+```r
 ## calculate the average number of steps across the different time intervals, averaged across all days
 interval_array <- tapply(activity_df$steps,activity_df$interval,FUN=mean,na.rm=TRUE)
 intervals <- as.numeric(names(interval_array))
 interval_df = data.frame(interval = intervals, average_steps = interval_array)
 
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
 ## Make a time series plot of the interval (x axis) and average number of steps taken
 ggplot() + geom_line(data = interval_df, aes(x=interval, y=average_steps)) + xlab("Interval") + 
   ylab("Average steps taken") + ggtitle("Number of steps taken by interval")
 ```
 
-```{r echo = TRUE, results="hide"}
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+
+```r
 ## calculate the interval that has the maximum average number of steps
 max_interval <- as.numeric(subset(interval_df, average_steps == max(average_steps),select=interval))
 ```
 
-##### As per the analysis, the maximum number of steps on an average is taken during the *`r max_interval`* th  interval
+##### As per the analysis, the maximum number of steps on an average is taken during the *835* th  interval
 
 
 ## Imputing missing values
 
 **Strategy to impute missing values:** Replace the missing values in the "steps" variable with the average steps for that particular interval (calculated from previous step) 
-```{r echo = TRUE}
+
+```r
 ## find the number of records with NA values
 na_records <- length(which(is.na(activity_df$steps)))
 ## replace the missing values with mean of the intervals calculated in the previous step
@@ -69,22 +81,24 @@ for (i in 1:na_records) {
 ## Draw a histogram with the new activity values
 new_activity_array <- tapply(new_df$steps,new_df$date,FUN=sum)
 hist(new_activity_array,main = "histogram of total steps per day", xlab="total steps/day")
-
 ```
 
-```{r echo = TRUE, results="hide"}
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
+
+```r
 ## calculate the mean and median of the new activity values (Non-NA)
 newmean <- mean(new_activity_array)
 newmedian <- median(new_activity_array)
 ```
 
-##### The new mean of total number of steps taken per day is *`r newmean`* and new median is *`r newmedian`*  
+##### The new mean of total number of steps taken per day is *1.0766189\times 10^{4}* and new median is *1.0766189\times 10^{4}*  
 The mean remains the same even after imputing the missing values and is same as the one calculated in the previous step with "NAs" removed, while the median has now shifted to the mean
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r echo = TRUE}
 
+```r
 ## creating a factor variable to represent day of the week from the date variable 
 new_df$dayofweek <- factor(weekdays(new_df$date))
 
@@ -118,7 +132,8 @@ weeklyactivity_df <- rbind(wd_df,we_df)
 ## create the plot
 p <- qplot(interval, average_steps, data = weeklyactivity_df,geom="line",main = "Average number of steps by Interval", xlab = "interval", ylab = "Steps" )
 p + facet_wrap(~dayofweek)
+```
 
-```  
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
 
 From the above analysis, it is evident that the average number of steps taken during weekdays are higher than weekend.
